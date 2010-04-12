@@ -41,6 +41,10 @@ from toydist.commands.core import \
         MyOptionParser, get_command_names, get_command, \
         get_public_command_names, ConvertionError
 
+from toymakerlib.hooks \
+    import \
+        get_pre_hooks, get_post_hooks
+
 if os.environ.get("TOYMAKER_DEBUG", None) is not None:
     TOYMAKER_DEBUG = True
 else:
@@ -84,7 +88,6 @@ def set_main():
     return module
 
 def main(argv=None):
-    from toymakerlib.hooks import get_pre_hooks, get_post_hooks
     if argv is None:
         argv = sys.argv[1:]
 
@@ -134,14 +137,18 @@ def main(argv=None):
         if not cmd_name in get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            cmd = get_command(cmd_name)()
-            if get_pre_hooks(cmd_name) is not None:
-                for f, a, kw in get_pre_hooks(cmd_name):
-                    f(*a, **kw)
-            cmd.run(cmd_opts)
-            if get_post_hooks(cmd_name) is not None:
-                for f, a, kw in get_post_hooks(cmd_name):
-                    f(*a, **kw)
+            run_cmd(cmd_name, cmd_opts)
+
+def run_cmd(cmd_name, cmd_opts):
+    cmd = get_command(cmd_name)()
+
+    if get_pre_hooks(cmd_name) is not None:
+        for f, a, kw in get_pre_hooks(cmd_name):
+            f(*a, **kw)
+    cmd.run(cmd_opts)
+    if get_post_hooks(cmd_name) is not None:
+        for f, a, kw in get_post_hooks(cmd_name):
+            f(*a, **kw)
 
 def noexc_main(argv=None):
     try:
