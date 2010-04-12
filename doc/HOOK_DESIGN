@@ -1,0 +1,25 @@
+Common tasks for hooks:
+	- create a new command.
+	- pre/post customization
+	- command overriding
+
+Creating new command
+--------------------
+
+TODO:
+
+	* configure parameters
+	* command dependency
+	* ?
+
+Also think about installing "plugins" which consist in new commands, but of
+course without pkg_resources. Look at bzr/hg way of doing things
+
+Pre/post hooks
+--------------
+
+Requires to think a bit about command protocol:
+
+	* what is done before a command is run ?
+	* what can be done before/after
+	* which options are given to which command ?
