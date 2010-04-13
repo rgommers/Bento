@@ -7,6 +7,9 @@ from toydist.core.platforms import \
         get_scheme
 from toydist.core import \
         PackageOptions, PackageDescription
+from toydist._config \
+    import \
+        CONFIGURED_STATE_DUMP
 
 from toydist.commands.core import \
         Command, UsageException, SCRIPT_NAME
@@ -16,7 +19,7 @@ class ConfigureState(object):
         self.flags = {}
         self.paths = {}
 
-    def dump(self, file='.config.bin'):
+    def dump(self, file=CONFIGURED_STATE_DUMP):
         import cPickle
         f = open(file, 'wb')
         try:
@@ -26,7 +29,7 @@ class ConfigureState(object):
             f.close()
 
     @classmethod
-    def from_dump(cls, file='.config.bin'):
+    def from_dump(cls, file=CONFIGURED_STATE_DUMP):
         import cPickle
         f = open(file, 'rb')
         try:
@@ -119,7 +122,7 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         s.package_description = filename
         s.pkg = pkg
         s.dump()
-        pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
+        pprint('GREEN', "Writing configuration state in file %s" % CONFIGURED_STATE_DUMP)
 
     def add_configuration_options(self, pkg_opts):
         """Add the path and flags-related options as defined in the
@@ -148,3 +151,11 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
             self.opts.append(flag_opts[name])
 
         return scheme, flag_opts
+
+def get_configured_state():
+    if not os.path.exists(CONFIGURED_STATE_DUMP):
+        raise UsageException(
+               "You need to run %s configure before building" % SCRIPT_NAME)
+
+    s = ConfigureState.from_dump(CONFIGURED_STATE_DUMP)
+    return s
