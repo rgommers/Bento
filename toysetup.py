@@ -36,7 +36,7 @@ class DistCheckCommand(Command):
         sdist = get_command("sdist")
         sdist().run([])
 
-        tarname = "toydist-0.0.2dev.tar.gz"
+        tarname = "toydist-0.0.2.tar.gz"
 
         saved = os.getcwd()
         if os.path.exists(".distcheck"):
@@ -48,7 +48,7 @@ class DistCheckCommand(Command):
         try:
             pprint('PINK', "\t-> Extracting sdist...")
             subprocess.check_call(["tar", "-xzf", tarname])
-            os.chdir("toydist-0.0.2dev")
+            os.chdir("toydist-0.0.2")
 
             pprint('PINK', "\t-> Configuring from sdist...")
             subprocess.check_call(["../../toymaker", "configure", "--prefix=tmp"])
