@@ -1,6 +1,8 @@
 import getopt
-import optparse
 import copy
+
+from optparse \
+    import Option, OptionParser
 
 # FIXME: how to handle script name in one location
 SCRIPT_NAME = 'toymaker'
@@ -45,11 +47,11 @@ class UsageException(Exception):
 class ConvertionError(Exception):
     pass
 
-class MyOptionParser(optparse.OptionParser):
+class MyOptionParser(OptionParser):
     def __init__(self, *a, **kw):
         if not kw.has_key('add_help_option'):
             kw['add_help_option'] = False
-        optparse.OptionParser.__init__(self, *a, **kw)
+        OptionParser.__init__(self, *a, **kw)
 
     def error(self, msg):
         raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
@@ -58,8 +60,9 @@ class Command(object):
     long_descr = None
     short_descr = None
     # XXX: decide how to deal with subcommands options
-    opts = [{'opts': ['-h', '--help'], "help": "Show this message and exits.",
-                                       "action": "store_true"}]
+    opts = [Option('-h', '--help',
+                   help="Show this message and exits.",
+                   action="store_true")]
 
     def __init__(self):
         self.parser = None
@@ -69,9 +72,7 @@ class Command(object):
             parser = MyOptionParser(self.long_descr.splitlines()[1])
             oo = copy.deepcopy(self.opts)
             for o in oo:
-                a = o.pop('opts')
-                kw = o
-                parser.add_option(*a, **kw)
+                parser.add_option(o)
             self.parser = parser
         except getopt.GetoptError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
