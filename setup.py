@@ -18,6 +18,10 @@ from distutils.core \
     import \
         setup
 
+from toydist.core \
+    import \
+        PackageDescription
+
 from setup_common \
     import \
         generate_version_py
@@ -60,12 +64,14 @@ class install(old_install):
         outfiles.extend(self.__files)
         return outfiles
 
+pkg = PackageDescription.from_file("toysetup.info")
+
 DESCR = pkg.description
 CLASSIFIERS = pkg.classifiers
 
 METADATA = {
     'name': pkg.name,
-    'version': FULL_VERSION,
+    'version': pkg.version,
     'description': pkg.summary,
     'url': pkg.url,
     'author': pkg.author,

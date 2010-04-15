@@ -38,3 +38,4 @@ git_revision = '%s'
     finally:
         f.close()
 
+    return FULL_VERSION, GIT_REVISION
