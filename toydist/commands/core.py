@@ -9,6 +9,9 @@ SCRIPT_NAME = 'toymaker'
 from toydist.commands.errors \
     import \
         UsageException, OptionError
+from toydist.commands._config \
+    import \
+        SCRIPT_NAME
 
 USAGE = """\
 %(name)s [command] [options]
