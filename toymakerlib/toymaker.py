@@ -39,7 +39,9 @@ from toydist.commands.build_wininst import \
 from toydist.commands.core import \
         register_command, UsageException, \
         MyOptionParser, get_command_names, get_command, \
-        get_public_command_names, ConvertionError
+        get_public_command_names
+from toydist.commands.errors import \
+        ConvertionError
 
 from toymakerlib.hooks \
     import \

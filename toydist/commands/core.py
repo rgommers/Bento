@@ -6,6 +6,9 @@ from optparse \
 
 # FIXME: how to handle script name in one location
 SCRIPT_NAME = 'toymaker'
+from toydist.commands.errors \
+    import \
+        UsageException, OptionError
 
 USAGE = """\
 %(name)s [command] [options]
@@ -40,12 +43,6 @@ def register_command(name, klass, public=True):
 
     _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
     _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
-
-class UsageException(Exception):
-    pass
-
-class ConvertionError(Exception):
-    pass
 
 class MyOptionParser(OptionParser):
     def __init__(self, *a, **kw):
@@ -112,7 +109,7 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
                 a = kw.pop('opts')
                 parser.add_option(*a, **kw)
             parser.parse_args(help_args)
-        except optparse.OptionError, e:
+        except OptionError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
         # 
