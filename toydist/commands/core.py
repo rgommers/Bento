@@ -2,10 +2,12 @@ import getopt
 import copy
 
 from optparse \
-    import Option, OptionParser
+    import \
+        Option
 
-# FIXME: how to handle script name in one location
-SCRIPT_NAME = 'toymaker'
+from toydist.commands.options \
+    import \
+        OptionParser
 from toydist.commands.errors \
     import \
         UsageException, OptionError
@@ -47,15 +49,6 @@ def register_command(name, klass, public=True):
     _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
     _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
 
-class MyOptionParser(OptionParser):
-    def __init__(self, *a, **kw):
-        if not kw.has_key('add_help_option'):
-            kw['add_help_option'] = False
-        OptionParser.__init__(self, *a, **kw)
-
-    def error(self, msg):
-        raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
-
 class Command(object):
     long_descr = None
     short_descr = None
@@ -69,7 +62,7 @@ class Command(object):
 
     def set_option_parser(self):
         try:
-            parser = MyOptionParser(self.long_descr.splitlines()[1])
+            parser = OptionParser(self.long_descr.splitlines()[1])
             oo = copy.deepcopy(self.opts)
             for o in oo:
                 parser.add_option(o)
@@ -106,11 +99,9 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
 
         # XXX: overkill as we don't support any options for now
         try:
-            parser = MyOptionParser()
+            parser = OptionParser()
             for o in self.opts:
-                kw = o.copy()
-                a = kw.pop('opts')
-                parser.add_option(*a, **kw)
+                parser.add_option(o)
             parser.parse_args(help_args)
         except OptionError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
@@ -120,11 +111,9 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = get_command(cmd_name)
 
-        parser = MyOptionParser(usage='')
+        parser = OptionParser(usage='')
         for o in cmd_class.opts:
-            a = o.pop('opts')
-            kw = o
-            parser.add_option(*a, **kw)
+            parser.add_option(o)
         print cmd_class.long_descr
         print ""
         parser.print_help()
