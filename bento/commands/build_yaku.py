@@ -2,6 +2,9 @@ import sys
 import os
 import shutil
 
+from bento.core.utils \
+    import \
+        cpu_count
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -10,21 +13,16 @@ from bento.commands.errors \
         CommandExecutionFailure
 
 import yaku.context
+import yaku.task_manager
+import yaku.scheduler
 
 def build_extension(bld, pkg, inplace):
     ret = {}
+    outputs = []
     for ext in pkg.extensions.values():
         try:
-            outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
-            so_ext = bld.builders["pyext"].env["PYEXT_SO"]
-            if inplace:
-                # FIXME: do package -> location + remove hardcoded extension
-                # FIXME: handle in-place at yaku level
-                for o in outputs:
-                    target = os.path.join(
-                                os.path.dirname(ext.name.replace(".", os.sep)),
-                                os.path.basename(o) + os.path.splitext(o)[1])
-                    shutil.copy(o, target)
+            output = bld.builders["pyext"].extension(ext.name, ext.sources)
+            outputs.extend(output)
         except RuntimeError, e:
             msg = "Building extension %s failed: %s" % (ext.name, str(e))
             raise CommandExecutionFailure(msg)
@@ -39,6 +37,22 @@ def build_extension(bld, pkg, inplace):
         section = InstalledSection("extensions", fullname, srcdir,
                                     target, [os.path.basename(o) for o in outputs])
         ret[fullname] = section
+
+    tsk_mng = yaku.task_manager.TaskManager(bld.tasks)
+    runner = yaku.scheduler.ParallelRunner(bld, tsk_mng, cpu_count() + 1)
+    runner.start()
+    runner.run()
+
+    for ext in pkg.extensions.values():
+        so_ext = bld.builders["pyext"].env["PYEXT_SO"]
+        if inplace:
+            # FIXME: do package -> location + remove hardcoded extension
+            # FIXME: handle in-place at yaku level
+            for o in outputs:
+                target = os.path.join(
+                            os.path.dirname(ext.name.replace(".", os.sep)),
+                            os.path.basename(o) + os.path.splitext(o)[1])
+                shutil.copy(o, target)
     return ret
 
 def build_extensions(pkg, inplace=False):
