@@ -75,11 +75,14 @@ Path: foo
         self._test_simple(opts)
 
     def test_simple_from_file(self):
-        fid, filename = tempfile.mkstemp(suffix=".info")
+        fid = tempfile.NamedTemporaryFile(mode="w+", suffix=".info")
+        filename = fid.name
         try:
-            os.write(fid, self.simple_text)
+            fid.write(self.simple_text)
+            fid.file.flush()
             opts = PackageOptions.from_file(filename)
             self._test_simple(opts)
         finally:
-            os.close(fid)
-            os.remove(filename)
+            fid.close()
+            if os.path.exists(filename):
+                os.remove(filename)
