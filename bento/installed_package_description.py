@@ -4,7 +4,7 @@ import StringIO
 try:
     import json
 except ImportError:
-    import simplejson as  json
+    import simplejson as   json
 
 from bento.core.utils import \
     subst_vars, normalize_path, unnormalize_path
