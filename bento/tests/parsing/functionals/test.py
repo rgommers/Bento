@@ -1,4 +1,5 @@
 import os
+import sys
 
 from unittest \
     import \
@@ -23,12 +24,16 @@ def parse(data):
     return ast_walk(p, dispatcher)
 
 def _test_functional(root):
-    py_module = root
-    info = os.path.join(os.path.dirname(__file__), root + ".info")
-    exec("from %s import ref" % py_module)
+    d = os.path.abspath(os.path.dirname(__file__))
+    info = os.path.join(d, root + ".info")
 
     tested = parse(open(info).read())
-    assert_equal(tested, ref, "divergence for %s" % info)
+    sys.path.insert(0, d)
+    try:
+        mod = __import__(root)
+        assert_equal(tested, mod.ref, "divergence for %s" % info)
+    finally:
+        sys.path.pop(0)
 
 def test_sphinx():
     _test_functional("sphinx")
