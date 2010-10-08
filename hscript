@@ -21,7 +21,8 @@ class TestCommand(Command):
             from nose.core import main
             try:
                 main(argv=sys.argv[:1])
-            except SystemExit, e:
+            except SystemExit:
+                e = sys.exc_info()[1]
                 if e.code:
                     msg = "Command test failed (nose threw a SystemExit" \
                           "(code=True))"
