@@ -6,7 +6,7 @@ import csv
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.commands.core \
     import \
         Command, Option
@@ -48,26 +48,26 @@ Usage:   bentomaker build_wheel [OPTIONS]"""
         output_dir = o.output_dir
         output_file = o.output_file
 
-        n = ctx.build_node.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
         build_manifest = BuildManifest.from_file(n.abspath())
         build_wheel(build_manifest, ctx.build_node, ctx.build_node, output_dir, output_file)
-        
+
 def hash_and_length(filename, hash=hashlib.sha256):
     """Return the (hash, length) of the named file."""
     h = hash()
     l = 0
     with open(filename, 'rb') as f:
         block = f.read(1<<20)
-        while block:            
+        while block:
             h.update(block)
             l += len(block)
             block = f.read(1<<20)
     return (h.digest(), l)
 
 def build_wheel(build_manifest, build_node, source_root, output_dir=None, output_file=None):
-    meta = PackageMetadata.from_ipkg(build_manifest)
-    egg_info = WheelInfo.from_ipkg(build_manifest, build_node)
-    
+    meta = PackageMetadata.from_build_manifest(build_manifest)
+    egg_info = WheelInfo.from_build_manifest(build_manifest, build_node)
+
     assert not '_' in meta.version
 
     # FIXME: fix egg name
@@ -86,11 +86,11 @@ def build_wheel(build_manifest, build_node, source_root, output_dir=None, output
     egg_scheme = {"prefix": source_root.abspath(),
                   "eprefix": source_root.abspath(),
                   "sitedir": source_root.abspath()}
-    
+
     record = []
 
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
-    try:        
+    try:
         for kind, source, target in build_manifest.iter_built_files(source_root, egg_scheme):
             if not kind in ["executables"]:
                 abspath = source.abspath()
@@ -99,19 +99,19 @@ def build_wheel(build_manifest, build_node, source_root, output_dir=None, output
                 hash, length = hash_and_length(abspath)
                 digest = "sha256="+urlsafe_b64encode(hash)
                 record.append((target_path, digest, length))
-                
-        for filename, cnt in egg_info.iter_meta(build_node):            
+
+        for filename, cnt in egg_info.iter_meta(build_node):
             name = '/'.join((meta.fullname + ".dist-info", filename))
             digest = "sha256="+urlsafe_b64encode(hashlib.sha256(cnt).digest())
             zid.writestr(name, cnt)
             record.append((name, digest, len(cnt)))
-        
+
         name = '/'.join((meta.fullname + ".dist-info", "WHEEL"))
         wheelfile = b'Wheel-Version: 0.1\nGenerator: bento\nRoot-Is-Purelib: true\n\n'
         zid.writestr(name, wheelfile)
         digest = "sha256="+urlsafe_b64encode(hashlib.sha256(wheelfile).digest())
         record.append((name, digest, len(wheelfile)))
-        
+
         name = '/'.join((meta.fullname + ".dist-info", "RECORD"))
         sio = cStringIO.StringIO()
         writer = csv.writer(sio)
@@ -119,7 +119,7 @@ def build_wheel(build_manifest, build_node, source_root, output_dir=None, output
             writer.writerow(row)
         writer.writerow((name, '', ''))
         zid.writestr(name, sio.getvalue())
-                
+
     finally:
         zid.close()
 
