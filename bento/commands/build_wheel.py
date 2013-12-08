@@ -22,6 +22,7 @@ from bento.installed_package_description \
 import bento.compat.api as compat
 import bento.utils.path
 
+
 class BuildWheelCommand(Command):
     long_descr = """\
 Purpose: build wheel
@@ -48,17 +49,19 @@ Usage:   bentomaker build_wheel [OPTIONS]"""
         build_wheel(build_manifest, ctx.build_node, ctx.build_node,
                     output_dir, output_file)
 
+
 def hash_and_length(filename, hash=hashlib.sha256):
     """Return the (hash, length) of the named file."""
     h = hash()
     l = 0
     with open(filename, 'rb') as f:
-        block = f.read(1<<20)
+        block = f.read(1 << 20)
         while block:
             h.update(block)
             l += len(block)
-            block = f.read(1<<20)
+            block = f.read(1 << 20)
     return (h.digest(), l)
+
 
 def build_wheel(build_manifest, build_node, source_root, output_dir=None,
                 output_file=None):

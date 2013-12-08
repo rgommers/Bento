@@ -18,13 +18,16 @@ from bento.installed_package_description \
     import \
         iter_source_files, BuildManifest
 
+
 def wheel_filename(fullname, pyver=None):
     if not pyver:
         pyver = "".join([str(i) for i in sys.version_info[:2]])
     return "%s-py%s-none-any.whl" % (fullname, pyver)
 
+
 def wheel_info_dirname(fullname, pyver=None):
     return "%s.dist-info" % (fullname)
+
 
 class WheelInfo(object):
     @classmethod
@@ -73,8 +76,8 @@ class WheelInfo(object):
     def get_entry_points(self):
         ret = []
         ret.append("[console_scripts]")
-        ret.extend([exe.full_representation() for exe in \
-                        self.executables.values()])
+        ret.extend([exe.full_representation() for exe in
+                    self.executables.values()])
         ret.append('')
         return "\n".join(ret)
 
@@ -93,29 +96,30 @@ class WheelInfo(object):
     def iter_meta(self, build_node):
         build_manifest_node = build_node.make_node(BUILD_MANIFEST_PATH)
         func_table = {
-                "pkg_info": self.get_pkg_info,
-                # "sources": self.get_sources,
-                # "install_requires": self.get_install_requires,
-                # "top_levels": self.get_top_levels,
-                # "not_zip_safe": self.get_not_zip_safe,
-                # "dependency_links": self.get_dependency_links,
-                "entry_points": self.get_entry_points,
-                "build_manifest_info": lambda:
-                    self.get_build_manifest_info(build_manifest_node),
-            }
+            "pkg_info": self.get_pkg_info,
+            # "sources": self.get_sources,
+            # "install_requires": self.get_install_requires,
+            # "top_levels": self.get_top_levels,
+            # "not_zip_safe": self.get_not_zip_safe,
+            # "dependency_links": self.get_dependency_links,
+            "entry_points": self.get_entry_points,
+            "build_manifest_info": lambda:
+                self.get_build_manifest_info(build_manifest_node),
+        }
         file_table = {
-                "pkg_info": "METADATA",
-                "sources": "SOURCES.txt",
-                "install_requires": "requires.txt",
-                "top_levels": "top_level.txt",
-                "not_zip_safe": "not-zip-safe",
-                "dependency_links": "dependency_links.txt",
-                "entry_points": "entry_points.txt",
-                "build_manifest_info": "build_manifest.info",
-            }
+            "pkg_info": "METADATA",
+            "sources": "SOURCES.txt",
+            "install_requires": "requires.txt",
+            "top_levels": "top_level.txt",
+            "not_zip_safe": "not-zip-safe",
+            "dependency_links": "dependency_links.txt",
+            "entry_points": "entry_points.txt",
+            "build_manifest_info": "build_manifest.info",
+        }
 
         for k in func_table:
             yield file_table[k], func_table[k]()
+
 
 def extract_egg(egg, extract_dir):
     # Given a bento-produced egg, extract its content in the given directory,
@@ -139,9 +143,11 @@ def extract_egg(egg, extract_dir):
 
     return build_manifest
 
+
 def urlsafe_b64encode(data):
     """urlsafe_b64encode without padding"""
     return base64.urlsafe_b64encode(data).rstrip(b'=')
+
 
 def urlsafe_b64decode(data):
     """urlsafe_b64decode without padding"""
