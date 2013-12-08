@@ -1,5 +1,4 @@
 import os
-import warnings
 import hashlib
 import cStringIO
 import csv
@@ -13,16 +12,12 @@ from bento.commands.core \
 from bento.commands.wheel_utils \
     import \
         WheelInfo, wheel_filename, urlsafe_b64encode
-from bento.utils.utils import pprint, extract_exception
 from bento.core \
     import \
         PackageMetadata
-from bento.private.bytecode \
-    import \
-        bcompile, PyCompileError
 from bento.installed_package_description \
     import \
-        BuildManifest, iter_files
+        BuildManifest
 
 import bento.compat.api as compat
 import bento.utils.path
@@ -50,7 +45,8 @@ Usage:   bentomaker build_wheel [OPTIONS]"""
 
         n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
         build_manifest = BuildManifest.from_file(n.abspath())
-        build_wheel(build_manifest, ctx.build_node, ctx.build_node, output_dir, output_file)
+        build_wheel(build_manifest, ctx.build_node, ctx.build_node,
+                    output_dir, output_file)
 
 def hash_and_length(filename, hash=hashlib.sha256):
     """Return the (hash, length) of the named file."""
@@ -64,7 +60,8 @@ def hash_and_length(filename, hash=hashlib.sha256):
             block = f.read(1<<20)
     return (h.digest(), l)
 
-def build_wheel(build_manifest, build_node, source_root, output_dir=None, output_file=None):
+def build_wheel(build_manifest, build_node, source_root, output_dir=None,
+                output_file=None):
     meta = PackageMetadata.from_build_manifest(build_manifest)
     egg_info = WheelInfo.from_build_manifest(build_manifest, build_node)
 
@@ -91,7 +88,8 @@ def build_wheel(build_manifest, build_node, source_root, output_dir=None, output
 
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
-        for kind, source, target in build_manifest.iter_built_files(source_root, egg_scheme):
+        for kind, source, target in build_manifest.iter_built_files(source_root,
+                                                                    egg_scheme):
             if not kind in ["executables"]:
                 abspath = source.abspath()
                 target_path = target.path_from(source_root).replace(os.path.sep, '/')
